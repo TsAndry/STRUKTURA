@@ -69,3 +69,32 @@ Enum-типи: `platform_role`, `company_role`, `object_role`, `company_status`,
 - Workforce: `worker_profiles`, `time_entries`, `work_items`, `accruals` (унікальність «робота→нарахування»), `payments`.
 
 Усі — з `company_id`, RLS на тих самих функціях і записом у `activity_log`.
+
+## 7. Measure 2.1 (міграція `0010_measure_projects.sql`)
+
+Перевірено на PostgreSQL 16 із шимом (87 перевірок, `supabase/tests/measure_rls.sql`); на реальному Supabase — ні.
+
+| Таблиця | Призначення | Ключові обмеження |
+|---|---|---|
+| `measurement_projects` | Обмірний проєкт обʼєкта | FK `(object_id, company_id)` → `construction_objects` (спільний `object_id`, жодних копій назви/адреси/власника); `display_units` ∈ m/cm/mm; `coordinate_unit = 'mm'` (внутрішня одиниця геометрії); `client_visible`; `editor_settings` (jsonb ≤ 64 КБ, лише метадані редактора); `version` |
+| `measurement_floors` | Поверхи | FK `(project_id, company_id)`; `sort_order` унікальний у проєкті (deferrable → атомарна перестановка); `elevation_mm`; `default_room_height_mm` 1000–10000 |
+| `measurement_rooms` | Приміщення | складений FK `(floor_id, project_id, company_id)`; `room_type` (12 типів), власна `name`; `height_mm` (NULL = висота поверху) 1000–10000; статус; **площі в таблиці немає свідомо** — буде обчислена з геометрії (2.3) |
+| `measurement_project_summaries` (view, `security_invoker`) | Список проєктів: назва обʼєкта, кількість поверхів/приміщень, `last_edited_at` | RLS застосовується від імені користувача |
+
+**Область (scope) визначає сервер.** Тригери `prepare_measurement_floor/room` підставляють `company_id`, `project_id`, `sort_order`
+з батьківського запису; відповідні стовпці недоступні клієнту для INSERT/UPDATE (privileges), а складені FK унеможливлюють розбіжність.
+
+**Версії.** `version` збільшується тригером при кожному UPDATE; клієнт може робити `update … where id = ? and version = ?`
+(0 рядків = застарілий запис). Вручну виставити `version` неможливо.
+
+**RPC:** `create_measurement_project(object_id, name, description, display_units, status, create_initial_floor, initial_floor_name)`
+(атомарно проєкт + початковий поверх), `reorder_measurement_floors(project_id, floor_ids[])`.
+Створення/редагування поверхів і приміщень, перейменування, архівування (status), видалення — прямими запитами під RLS.
+
+**Нові коди помилок:** `invalid_project_name`, `invalid_units`, `object_archived`, `floor_set_mismatch` (+ загальні `forbidden`, `invalid_initial_status`).
+
+**Журнал (`module = 'measure'`):** `project.created`, `project.status_changed`, `project.deleted`, `floor.created`, `room.created`.
+
+**Права** — у `ROLES_AND_PERMISSIONS.md` (розділ Measure).
+
+**Не реалізовано:** таблиці геометрії (стіни, вузли, отвори), історія змін, автозбереження геометрії — Measure 2.2+.

@@ -1,5 +1,33 @@
 # STRUCTURA — Журнал розробки
 
+## 2026-11-14 — Запис №2: Measure 2.1, БД-частина; публікація в GitHub
+
+**Контекст.** Отримано промпти Measure 2.1 і 2.2. Застосунку Етапу 1 (Next.js) ще немає, а встановлення npm-пакетів у цій
+розмові недоступне (`npm` не бачить реєстр). Тому реалізовано лише ту частину 2.1, яку можна повністю перевірити без мережі.
+Етап 2.2 не розпочато.
+
+**Реалізовано**
+
+- Репозиторій `TsAndry/STRUKTURA` підключено (на початку був лише `README.md`), документацію й БД Етапу 1 опубліковано в `main`.
+- Міграція `0010_measure_projects.sql`: `measurement_projects`, `measurement_floors`, `measurement_rooms`, view `measurement_project_summaries`,
+  функції прав `measure_can_*`, RPC `create_measurement_project` і `reorder_measurement_floors`, тригери (область, версії, архівування, журнал), RLS і привілеї.
+- Тест `supabase/tests/measure_rls.sql`.
+- Оновлено документацію: ROADMAP (плани 2.2 і 2.3), DATABASE, TESTING, ARCHITECTURE (одиниці), DECISIONS (D-015…D-019), ROLES_AND_PERMISSIONS, MASTER_PLAN.
+
+**Файли:** `supabase/migrations/0010_measure_projects.sql`, `supabase/tests/measure_rls.sql`, `docs/*`, `README.md`.
+
+**Міграції:** 0010.
+
+**Протестовано:** `measure_rls.sql` — 87 перевірок ✅; регресія `rls_isolation.sql` — 113 ✅ (PG16 + шим, не реальний Supabase).
+
+**Не зроблено / проблеми**
+
+1. Каркас Next.js, UI Measure (сторінка, дерево, форми), CAD-робоча область, геометричний рушій — не створено. Блокер: немає застосунку Етапу 1 і мережі для `npm install`.
+2. Міграції не запускались на реальному Supabase.
+3. Не перевірено дії від імені `admin`/`object_manager` у Measure (див. TESTING.md).
+
+**Наступний крок:** нова розмова з увімкненим «Allow network egress» → каркас Next.js (Етап 1, завдання 2…) → UI Measure 2.1 → Measure 2.2.
+
 ## 2026-11-14 — Запис №1: архітектура та БД-фундамент
 
 **Реалізовано**
