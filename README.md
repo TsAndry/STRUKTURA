@@ -12,7 +12,7 @@
 | Measure 2.1: схема БД, RLS, RPC (`0010`) | ✅ перевірено так само |
 | Measure 2.1: SQL-тест | ✅ 87 перевірок |
 | Геометричний рушій Measure (`src/features/measure/engine`, чистий TS) | ✅ 71 unit-тест; не підключений до UI |
-| Застосунок Next.js (UI, авторизація, Dashboard, Measure UI, CAD) | ⬜ **не створено** → сайт на Vercel показує 404 |
+| Застосунок Next.js (UI, авторизація, Dashboard, Measure UI, CAD) | ⬜ **не створено**; на Vercel — лише тимчасова статична сторінка `index.html` («у розробці») |
 | Measure 2.2 (редактор стін) | ⬜ не розпочато |
 
 Деталі: `docs/ROADMAP.md`, `docs/TESTING.md`, `docs/DEVELOPMENT_LOG.md`.
